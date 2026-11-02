@@ -1,0 +1,16 @@
+---- Test 1: write 3 bytes to slave 0x38 ----
+[PASS] ADDR_W(0x70) : got 0x70
+[PASS] DATA1(0xBE) : got 0xbe
+[PASS] DATA2(0x08) : got 0x08
+[PASS] DATA3(0x00) : got 0x00
+   [dbg] SCL edges after write transaction : 38
+---- Test 2: read 1 byte from slave 0x38 ----
+[PASS] ADDR_R(0x71) : got 0x71
+[PASS] READ_DATA : got 0xa5
+---- Test 3: duplicate-byte regression ----
+[PASS] BYTES_RECEIVED = 4 (expected 4, no duplicate)
+   [info] total SCL rising edges = 57 (54 data clocks + 2 STOP + 1 init)
+[PASS] ACK_ERR = 0
+=====================================
+RESULT: ALL TESTS PASSED
+=====================================

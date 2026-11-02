@@ -73,9 +73,19 @@
 │   └── top_env_monitor.smsk
 ├── docs/
 │   └── 调试记录.md          11 处缺陷的定位与修复记录
+├── tb/
+│   ├── tb_i2c_master.v      I2C 主机自检 testbench（含从机模型）
+│   ├── run_sim.do           ModelSim 一键仿真脚本
+│   ├── wave.do              GUI 波形配置
+│   └── sim_log.txt          仿真输出记录
 ├── images/
 │   ├── 01_SCL_100kHz_周期10us.png
-│   └── 02_I2C_地址0x78_ACK.png
+│   ├── 02_I2C_地址0x78_ACK.png
+│   ├── 03_系统框图.jpg
+│   ├── 04_分层架构.jpg
+│   ├── 05_性能指标.jpg
+│   ├── 06_实物全景.jpg
+│   └── 07_开发板特写.jpg
 ├── build.tcl                一键编译脚本
 └── README.md
 ```
@@ -110,6 +120,47 @@ pds_shell.exe -file build.tcl
 > 工程路径**不可包含中文、空格、括号**，否则 PDS 报 `Flow-0002`。
 
 编译产物由 PDS 生成于 `generate_bitstream/top_env_monitor.sbit`。
+
+## 仿真验证
+
+`tb/tb_i2c_master.v` 为自检式 testbench，内含一个**过程式 I2C 从机模型**（地址 0x38，支持写方向应答、读方向数据驱动、开漏总线 `pullup` 建模）。
+
+| 测试项 | 验证内容 |
+|---|---|
+| **Test 1** | START 后发送地址 `0x70` + 数据 `0xBE / 0x08 / 0x00`，从机逐字节应答 |
+| **Test 2** | 读事务：地址 `0x71`，从机返回 `0xA5`，主机最后一字节发 NACK |
+| **Test 3** | **重复发送回归**：从机实收字节数必须为 4（修复前的缺陷会让该值为 8） |
+
+运行方法：
+
+```bash
+vlib work
+vlog rtl/i2c_master.v tb/tb_i2c_master.v
+vsim -c work.tb_i2c_master -do "run -all; quit -f"
+```
+
+或直接执行脚本：`vsim -c -do tb/run_sim.do`（在仓库根目录）
+
+仿真输出（ModelSim SE-64 10.4）：
+
+```
+---- Test 1: write 3 bytes to slave 0x38 ----
+[PASS] ADDR_W(0x70) : got 0x70
+[PASS] DATA1(0xBE) : got 0xbe
+[PASS] DATA2(0x08) : got 0x08
+[PASS] DATA3(0x00) : got 0x00
+---- Test 2: read 1 byte from slave 0x38 ----
+[PASS] ADDR_R(0x71) : got 0x71
+[PASS] READ_DATA : got 0xa5
+---- Test 3: duplicate-byte regression ----
+[PASS] BYTES_RECEIVED = 4 (expected 4, no duplicate)
+[PASS] ACK_ERR = 0
+=====================================
+RESULT: ALL TESTS PASSED
+=====================================
+```
+
+> 说明：`Test 3` 的判据选用"从机实收字节数"而非"SCL 边沿总数"。原因是 SCL 边沿总数还包含上电初始化的一次 `z→1` 跳变与每次 STOP 的上升沿（54 数据时钟 + 2 STOP + 1 初始化 = 57），用它做断言会把**协议正确性**和**仿真建模细节**混在一起，判据不干净。
 
 ## 作品展示
 
