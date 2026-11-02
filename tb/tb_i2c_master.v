@@ -62,6 +62,16 @@ module tb_i2c_master;
         .done(done), .ack_err(ack_err)
     );
 
+    // ---------------- 波形导出 ----------------
+    // 仿真命令带 +vcd 时导出 VCD，可用 GTKWave 等工具查看；不带则不产生文件。
+    //   vsim -c work.tb_i2c_master +vcd -do "run -all; quit -f"
+    initial begin
+        if ($test$plusargs("vcd")) begin
+            $dumpfile("tb_i2c_master.vcd");
+            $dumpvars(0, tb_i2c_master);
+        end
+    end
+
     // ---------------- 计分与统计 ----------------
     integer errors  = 0;
     integer scl_cnt = 0;
