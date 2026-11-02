@@ -1,0 +1,116 @@
+# ============================================================================
+# env_monitor.fdc —— 引脚约束（Pango Design Suite 2022.2 语法）
+#
+# 板卡：盘古 50K 开发板 = MES50HP 核心板 + Meypro-Base Board V3.0 底板
+# 器件：PGL50H-6IFBG484（工业级 I 与商业级 F 封装引脚相同）
+#
+# 依据（2026-10-23 重新核对，两处独立证据一致）：
+#   1) MES50HP开发板硬件使用手册_1V1.pdf  表 2-3（时钟）、表 3-9（LED）
+#   2) 官方例程 盘古50K开发板/2_Demo/01_led_test/led_test.fdc
+#      → LED1=B2 LED2=A2 clk=P20 rstn=K18，逐脚吻合
+#
+# ⚠️ 历史教训：本项目早期误用了 MES-HDMI-BASE 底板的引脚表
+#    （时钟 AB11、LED R3/M5、LED 在 BANK3/1.5V），那是**另一块底板**，
+#    导致 LED 长时间点不亮。换板/换底板后必须重查该底板手册，不可沿用。
+#
+# 语法说明（PDS 专用，与 ISE/Vivado 不同，不要混用）：
+#   define_attribute {p:<端口名>} {PAP_IO_LOC}      {<球名>}
+#   define_attribute {p:<端口名>} {PAP_IO_DIRECTION} {Input|Output|Inout}
+#   define_attribute {p:<端口名>} {PAP_IO_VCCIO}     {3.3}
+#   define_attribute {p:<端口名>} {PAP_IO_STANDARD}  {LVCMOS33}
+# ============================================================================
+
+# ---------- 系统时钟 50MHz ----------
+# 球名 P20，网络名 FPGA_GCLK_50M，由核心板 U9 有源晶振提供
+# ⚠️ 不是 AB11：AB11 在本底板上是 40pin 扩展口的一个普通 IO（B2_L24_N）
+define_attribute {p:sys_clk} {PAP_IO_DIRECTION} {Input}
+define_attribute {p:sys_clk} {PAP_IO_LOC} {P20}
+define_attribute {p:sys_clk} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:sys_clk} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:sys_clk} {PAP_IO_NONE} {TRUE}
+
+# ---------- 通道 1：AHT20（40pin 扩展口 J8）----------
+# T12 = B2_L27_P   U12 = B2_L27_N   同一对差分走线，相邻针，便于成对接线
+define_attribute {p:aht1_scl} {PAP_IO_DIRECTION} {Inout}
+define_attribute {p:aht1_scl} {PAP_IO_LOC} {W12}
+define_attribute {p:aht1_scl} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:aht1_scl} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:aht1_scl} {PAP_IO_DRIVE} {8}
+define_attribute {p:aht1_scl} {PAP_IO_SLEW} {SLOW}
+define_attribute {p:aht1_scl} {PAP_IO_PULLUP} {TRUE}
+
+define_attribute {p:aht1_sda} {PAP_IO_DIRECTION} {Inout}
+define_attribute {p:aht1_sda} {PAP_IO_LOC} {Y12}
+define_attribute {p:aht1_sda} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:aht1_sda} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:aht1_sda} {PAP_IO_DRIVE} {8}
+define_attribute {p:aht1_sda} {PAP_IO_SLEW} {SLOW}
+define_attribute {p:aht1_sda} {PAP_IO_PULLUP} {TRUE}
+
+# ---------- 通道 2：AHT20（40pin 扩展口 J8）----------
+# T10 = B2_L17_P   U10 = B2_L17_N
+define_attribute {p:aht2_scl} {PAP_IO_DIRECTION} {Inout}
+define_attribute {p:aht2_scl} {PAP_IO_LOC} {T10}
+define_attribute {p:aht2_scl} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:aht2_scl} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:aht2_scl} {PAP_IO_DRIVE} {8}
+define_attribute {p:aht2_scl} {PAP_IO_SLEW} {SLOW}
+define_attribute {p:aht2_scl} {PAP_IO_PULLUP} {TRUE}
+
+define_attribute {p:aht2_sda} {PAP_IO_DIRECTION} {Inout}
+define_attribute {p:aht2_sda} {PAP_IO_LOC} {U10}
+define_attribute {p:aht2_sda} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:aht2_sda} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:aht2_sda} {PAP_IO_DRIVE} {8}
+define_attribute {p:aht2_sda} {PAP_IO_SLEW} {SLOW}
+define_attribute {p:aht2_sda} {PAP_IO_PULLUP} {TRUE}
+
+# ---------- 0.96 寸 OLED SSD1306（40pin 扩展口 J8）----------
+# W12 = B2_L23_P   Y12 = B2_L23_N
+define_attribute {p:oled_scl} {PAP_IO_DIRECTION} {Inout}
+define_attribute {p:oled_scl} {PAP_IO_LOC} {T12}
+define_attribute {p:oled_scl} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:oled_scl} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:oled_scl} {PAP_IO_DRIVE} {8}
+define_attribute {p:oled_scl} {PAP_IO_SLEW} {SLOW}
+define_attribute {p:oled_scl} {PAP_IO_PULLUP} {TRUE}
+
+define_attribute {p:oled_sda} {PAP_IO_DIRECTION} {Inout}
+define_attribute {p:oled_sda} {PAP_IO_LOC} {U12}
+define_attribute {p:oled_sda} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:oled_sda} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:oled_sda} {PAP_IO_DRIVE} {8}
+define_attribute {p:oled_sda} {PAP_IO_SLEW} {SLOW}
+define_attribute {p:oled_sda} {PAP_IO_PULLUP} {TRUE}
+
+# ============================================================================
+# 板载用户 LED（盘古50K 底板 LED1 / LED2）
+#
+# 链路（手册表 3-9 + 官方例程双重确认）：
+#   LED1 ── 球 B2 ── 网络 B0_L2_P
+#   LED2 ── 球 A2 ── 网络 B0_L2_N
+# 驱动电路：3.3V → 限流电阻 → LED → MMBT3904 集电极，发射极 GND，
+#           FPGA 经 1K 接基极 ⇒ 高电平点亮（Active High）
+# 所在 BANK：BANK0，VCCIO = 3.3V（不是 BANK3 的 1.5V！）
+# 已实测：烧该约束的测试码流，两颗 LED 均正常点亮（2026-10-23 14:12）
+# ============================================================================
+define_attribute {p:led_hb} {PAP_IO_DIRECTION} {Output}
+define_attribute {p:led_hb} {PAP_IO_LOC} {B2}
+define_attribute {p:led_hb} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:led_hb} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:led_hb} {PAP_IO_DRIVE} {8}
+define_attribute {p:led_hb} {PAP_IO_SLEW} {FAST}
+
+define_attribute {p:led_alarm} {PAP_IO_DIRECTION} {Output}
+define_attribute {p:led_alarm} {PAP_IO_LOC} {A2}
+define_attribute {p:led_alarm} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:led_alarm} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:led_alarm} {PAP_IO_DRIVE} {8}
+define_attribute {p:led_alarm} {PAP_IO_SLEW} {FAST}
+
+# ============================================================================
+# 时序约束
+# PDS 官方示例同样把 create_clock 与引脚约束写在同一个 .fdc 中，
+# 工程里只需加入本文件一个约束，不必再加 .sdc。
+# ============================================================================
+create_clock -name {sys_clk} [get_ports {sys_clk}] -period {20} -waveform {0 10}
